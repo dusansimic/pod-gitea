@@ -1,0 +1,3 @@
+ansible/inventory.yaml
+ansible/main.yaml
+ansible/secrets.yaml

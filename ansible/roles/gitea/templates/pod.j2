@@ -1,0 +1,25 @@
+# pod-gitea.service
+
+[Unit]
+Description=Podman pod-gitea.service
+Documentation=man:podman-generate-systemd(1)
+Wants=network-online.target
+After=network-online.target
+RequiresMountsFor=
+Requires=container-gitea_app.service container-gitea_db.service
+Before=container-gitea_app.service container-gitea_db.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/pod-gitea.pid %t/pod-gitea.pod-id
+ExecStartPre=/usr/bin/podman pod create --infra-conmon-pidfile %t/pod-gitea.pid --pod-id-file %t/pod-gitea.pod-id --name {{ pod_name }} --publish {{ publish_address }}:{{ publish_web_port }}:3000 --publish {{ publish_address }}:{{ publish_ssh_port }}:22 --replace
+ExecStart=/usr/bin/podman pod start --pod-id-file %t/pod-gitea.pod-id
+ExecStop=/usr/bin/podman pod stop --ignore --pod-id-file %t/pod-gitea.pod-id -t 10
+ExecStopPost=/usr/bin/podman pod rm --ignore -f --pod-id-file %t/pod-gitea.pod-id
+PIDFile=%t/pod-gitea.pid
+Type=forking
+
+[Install]
+WantedBy=multi-user.target default.target

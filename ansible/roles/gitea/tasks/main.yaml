@@ -1,0 +1,45 @@
+---
+
+- name: create units directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ units_path }}"
+    mode: 0755
+    seuser: unconfined_u
+    serole: object_r
+    setype: systemd_unit_file_t
+
+- name: set context for units directory
+  community.general.sefcontext:
+    target: "{{ units_path }}(/.*)?"
+    setype: systemd_unit_file_t
+    state: present
+  become: true
+
+- name: create pod service
+  ansible.builtin.template:
+    src: pod.j2
+    dest: "{{ units_path }}/pod-gitea.service"
+    mode: 0644
+  notify:
+    - reload daemon
+    - enable pod service
+    - restart pod service
+
+- name: create db service
+  ansible.builtin.template:
+    src: db.j2
+    dest: "{{ units_path }}/container-gitea_db.service"
+    mode: 0644
+  notify:
+    - reload daemon
+    - restart pod service
+
+- name: create app service
+  ansible.builtin.template:
+    src: app.j2
+    dest: "{{ units_path }}/container-gitea_app.service"
+    mode: 0644
+  notify:
+    - reload daemon
+    - restart pod service

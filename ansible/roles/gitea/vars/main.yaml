@@ -1,0 +1,15 @@
+---
+
+units_path: ~/.config/systemd/user
+
+pod_name: gitea
+
+app_name: "{{ pod_name }}_app"
+app_image: docker.io/gitea/gitea
+app_tag: "1.16.6"
+app_volume: "{{ pod_name }}_app"
+
+db_name: "{{ pod_name }}_db"
+db_image: docker.io/library/postgres
+db_tag: 14.2-alpine
+db_volume: "{{ pod_name }}_db"
